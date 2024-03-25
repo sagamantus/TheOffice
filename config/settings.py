@@ -10,6 +10,9 @@ TILESIZE = 64
 CHARACTER = 'Eskimo'
 USERNAME = 'sagamantus'
 
+SERVER_HOST = '192.168.137.1'
+SERVER_PORT = 12345
+
 pygame.font.init()
 
 with open('./graphic/world_Hidden.csv', 'r') as f:

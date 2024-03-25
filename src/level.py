@@ -1,8 +1,14 @@
+import pickle
+import socket
+import threading
+import time
 import pygame
 from config.settings import *
 
+from src.other_player import OtherPlayer
 from src.tile import Tile
 from src.player import Player
+from src.websocket import connect_host
 
 from config.debug import debug
 
@@ -91,7 +97,8 @@ class Level:
         self.shadow = pygame.image.load('./graphic/Shadow.png')
         self.shadow = pygame.transform.scale(
             self.shadow, (self.shadow.get_width() * (TILESIZE//16), self.shadow.get_height() * (TILESIZE//16))).convert_alpha()
-
+        
+        self.other_players = {}
 
         # sprite setup
         self.create_map()
@@ -106,8 +113,27 @@ class Level:
                 if column == '58':
                     self.player = Player(
                         (x, y), self.obstacle_sprites, [self.visible_sprites])
-
-    def run(self):
+        
+    def run(self, client_socket):
         # update and draw the game
+        client_socket.setblocking(False)
+        try:
+            data = client_socket.recv(8192)
+            data = pickle.loads(data)
+            if data.get('disconnect', None) != None:
+                self.other_players[data["disconnect"]].kill()
+                del self.other_players[data["disconnect"]]   
+            elif data['client_address'] not in self.other_players:
+                self.other_players[data["client_address"]] = OtherPlayer(data['name'], data['position'], data['status'], data['direction'], data['frame_index'], data['hitbox'], data['character'], self.obstacle_sprites, [self.visible_sprites])
+            else:
+                self.other_players[data["client_address"]].position = data['position']
+                self.other_players[data["client_address"]].direction = data['direction']
+                self.other_players[data["client_address"]].status = data['status']
+                self.other_players[data["client_address"]].frame_index = data['frame_index']
+                self.other_players[data["hitbox"]].frame_index = data['hitbox']
+        except Exception as e:
+            pass
+        
         self.visible_sprites.custom_draw(self.player)
+        client_socket.send(pickle.dumps({'name': USERNAME, 'position': self.player.rect.topleft, 'status': self.player.status, 'direction': self.player.direction, 'frame_index': self.player.frame_index, 'hitbox': self.player.hitbox, 'character': CHARACTER}))
         self.visible_sprites.update()

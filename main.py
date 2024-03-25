@@ -1,3 +1,5 @@
+import socket
+import threading
 import pygame
 import sys
 from config.settings import *
@@ -20,6 +22,10 @@ class Game:
         self.level = Level()
 
     def run(self):
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((SERVER_HOST, SERVER_PORT))        
+        # threading.Thread(target=self.level.other_players_add, args=(client_socket,)).run()
+        
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -27,7 +33,8 @@ class Game:
                     sys.exit()
 
             self.screen.fill((20, 27, 27))
-            self.level.run()
+            
+            self.level.run(client_socket)
 
             # Debug
             # debug(f"FPS: {self.clock.get_fps() :.2f}")
