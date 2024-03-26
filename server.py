@@ -6,6 +6,7 @@ server_ip = "0.0.0.0"
 port = 12345
 audio_port = 50007
 
+
 def run_server(server_ip, port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -23,9 +24,9 @@ def run_server(server_ip, port):
                 data = client_socket.recv(1024)
                 if not data:
                     break
-                
+
                 data = pickle.loads(data)
-                data['client_address'] = str(client_address)
+                data["client_address"] = str(client_address)
                 data = pickle.dumps(data)
 
                 for connection in client_connections:
@@ -33,11 +34,14 @@ def run_server(server_ip, port):
                         client_connections[connection].sendall(data)
             except Exception as e:
                 print(f"Error handling client {client_address}: {e}")
-                if type(e) == ConnectionResetError: break
-            
+                if type(e) == ConnectionResetError:
+                    break
+
         for connection in client_connections:
             if connection != client_address:
-                client_connections[connection].sendall(pickle.dumps({'disconnect': str(client_address)}))
+                client_connections[connection].sendall(
+                    pickle.dumps({"disconnect": str(client_address)})
+                )
 
         del client_connections[client_address]
         client_socket.close()
@@ -47,9 +51,12 @@ def run_server(server_ip, port):
             client_socket, client_address = server_socket.accept()
             print(f"Accepted connection from {client_address}")
             client_connections[client_address] = client_socket
-            threading.Thread(target=handle_client, args=(client_socket, client_address)).start()
+            threading.Thread(
+                target=handle_client, args=(client_socket, client_address)
+            ).start()
 
     threading.Thread(target=accept_clients).start()
+
 
 def run_audio_server(server_ip, port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -74,11 +81,14 @@ def run_audio_server(server_ip, port):
                         client_connections[connection].sendall(data)
             except Exception as e:
                 print(f"Error handling client {client_address}: {e}")
-                if type(e) == ConnectionResetError: break
-            
+                if type(e) == ConnectionResetError:
+                    break
+
         for connection in client_connections:
             if connection != client_address:
-                client_connections[connection].sendall(pickle.dumps({'disconnect': str(client_address)}))
+                client_connections[connection].sendall(
+                    pickle.dumps({"disconnect": str(client_address)})
+                )
 
         del client_connections[client_address]
         client_socket.close()
@@ -88,9 +98,12 @@ def run_audio_server(server_ip, port):
             client_socket, client_address = server_socket.accept()
             print(f"Accepted connection from {client_address}")
             client_connections[client_address] = client_socket
-            threading.Thread(target=handle_client, args=(client_socket, client_address)).start()
+            threading.Thread(
+                target=handle_client, args=(client_socket, client_address)
+            ).start()
 
     threading.Thread(target=accept_clients).start()
+
 
 threading.Thread(target=run_server, args=(server_ip, port)).start()
 threading.Thread(target=run_audio_server, args=(server_ip, audio_port)).start()

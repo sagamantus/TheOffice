@@ -1,5 +1,6 @@
 import pygame
 
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(groups)
@@ -7,20 +8,20 @@ class Entity(pygame.sprite.Sprite):
         self.animation_speed = 0.15
         self.speed = 5
         self.direction = pygame.math.Vector2()
-        self.rect = pygame.Rect(0,0,0,0)
-    
+        self.rect = pygame.Rect(0, 0, 0, 0)
+
     def move(self, speed):
         if self.direction.magnitude() != 0:
             self.direction = self.direction.normalize()
 
         self.hitbox.x += self.direction.x * speed
-        self.collision('horizontal')
+        self.collision("horizontal")
         self.hitbox.y += self.direction.y * speed
-        self.collision('vertical')
+        self.collision("vertical")
         self.rect.center = self.hitbox.center
 
     def collision(self, direction):
-        if direction == 'horizontal':
+        if direction == "horizontal":
             for sprite in self.obstacle_sprites:
                 if sprite.hitbox.colliderect(self.hitbox):
                     if self.direction.x > 0:  # moving right
@@ -28,7 +29,7 @@ class Entity(pygame.sprite.Sprite):
                     if self.direction.x < 0:  # moving left
                         self.hitbox.left = sprite.hitbox.right
 
-        if direction == 'vertical':
+        if direction == "vertical":
             for sprite in self.obstacle_sprites:
                 if sprite.hitbox.colliderect(self.hitbox):
                     if self.direction.y > 0:  # moving down
