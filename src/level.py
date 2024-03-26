@@ -3,6 +3,7 @@ import socket
 import threading
 import time
 import pygame
+import pyaudio
 from config.settings import *
 
 from src.other_player import OtherPlayer
@@ -105,6 +106,57 @@ class Level:
 
         # sprite setup
         self.create_map()
+        
+        p = pyaudio.PyAudio()
+
+        self.stream_audio_in = p.open(format=FORMAT,
+                                channels=CHANNELS,
+                                rate=RATE,
+                                input=True,
+                                frames_per_buffer=CHUNK)
+
+        self.stream_audio_out = p.open(format=FORMAT,
+                                channels=CHANNELS,
+                                rate=RATE,
+                                output=True,
+                                frames_per_buffer=CHUNK)
+        
+        s_audio = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s_audio.connect((SERVER_HOST, AUDIO_PORT))
+        send_audio_thread = threading.Thread(target=self.send_audio_data, args=(s_audio, self.stream_audio_in), daemon=True)
+        receive_audio_thread = threading.Thread(target=self.receive_audio_data, args=(s_audio, self.stream_audio_out), daemon=True)
+        send_audio_thread.start()
+        receive_audio_thread.start()
+        
+    def send_audio_data(self, sock, stream):
+        try:
+            while True:
+                pos = self.player.rect.topleft
+                data = stream.read(CHUNK).decode(encoding='latin-1')
+                sock.sendall(pickle.dumps([pos, data]))
+        except Exception as e:
+            print("Error sending audio data:", e)
+
+    def receive_audio_data(self, sock, stream):
+        while True:
+            try:
+                data = sock.recv(2048)
+                data = pickle.loads(data)
+                if not data:
+                    break
+                # check same room
+                pos = data[0]
+                data = data[1].encode(encoding='latin-1')
+                if (
+                    ((64 <= pos[0] <= 512 and 883 <= pos[1] <= 1165) and (64 <= self.player.rect.topleft[0] <= 512 and 883 <= self.player.rect.topleft[1] <= 1165))
+                    or ((64 <= pos[0] <= 512 and 51 <= pos[1] <= 525) and (64 <= self.player.rect.topleft[0] <= 512 and 51 <= self.player.rect.topleft[1] <= 525))
+                    or ((640 <= pos[0] <= 1792 and 51 <= pos[1] <= 525) and (640 <= self.player.rect.topleft[0] <= 1792 and 51 <= self.player.rect.topleft[1] <= 525))
+                    or ((640 <= pos[0] <= 1216 and 883 <= pos[1] <= 1165) and (640 <= self.player.rect.topleft[0] <= 1216 and 883 <= self.player.rect.topleft[1] <= 1165))
+                    or ((1344 <= pos[0] <= 1792 and 883 <= pos[1] <= 1165) and (1344 <= self.player.rect.topleft[0] <= 1792 and 883 <= self.player.rect.topleft[1] <= 1165))
+                ):
+                    stream.write(data)
+            except Exception as e:
+                print("Error receiving audio data:", e)
 
     def create_map(self):
         for row_index, row in enumerate(WORLD_MAP):
