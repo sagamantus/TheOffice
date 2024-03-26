@@ -63,11 +63,18 @@ class YSortCameraGroup(pygame.sprite.Group):
         if player.last_direction_y < 0: self.display_surface.blit(self.wall_surface, floor_offset_position)
         if player.last_direction_y < 0: self.display_surface.blit(self.items_surface, floor_offset_position)
 
-        self.display_surface.blit(self.shadow, self.shadow.get_rect(center = player.rect.center).topleft-pygame.math.Vector2(self.offset.x, self.offset.y - (TILESIZE//2)))
 
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
+            if type(sprite) == OtherPlayer:
+                self.display_surface.blit(self.shadow, self.shadow.get_rect(center = sprite.rect.center).topleft-pygame.math.Vector2(self.offset.x, self.offset.y - (TILESIZE//2)))
+                outlineSurf = pygame.font.Font('./graphic/NormalFont.ttf', 16).render(sprite.name, True, (255, 255, 255), (0, 0, 0))
+                self.display_surface.blit(outlineSurf, outlineSurf.get_rect(center = sprite.rect.center).topleft-pygame.math.Vector2(self.offset.x, self.offset.y + TILESIZE - (TILESIZE//10)))
+            if type(sprite) == Player:
+                self.display_surface.blit(self.shadow, self.shadow.get_rect(center = sprite.rect.center).topleft-pygame.math.Vector2(self.offset.x, self.offset.y - (TILESIZE//2)))
             offset_postion = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_postion)
+        outlineSurf = pygame.font.Font('./graphic/NormalFont.ttf', 16).render(USERNAME, True, (255, 255, 255), (0, 0, 0))
+        self.display_surface.blit(outlineSurf, outlineSurf.get_rect(center = player.rect.center).topleft-pygame.math.Vector2(self.offset.x, self.offset.y + TILESIZE - (TILESIZE//10)))
 
 
         # If player's last direction was DOWN add walls and items after player
@@ -78,10 +85,6 @@ class YSortCameraGroup(pygame.sprite.Group):
         # self.face_box = pygame.transform.scale(
         #     self.face_box, (self.face_box.get_width() * max(1, TILESIZE//32), self.face_box.get_height() * max(1, TILESIZE//32))).convert_alpha()
         # self.display_surface.blit(self.face_box, (16,16))
-
-        outlineSurf = pygame.font.Font('./graphic/NormalFont.ttf', 16).render(USERNAME, True, (255, 255, 255), (0, 0, 0))
-        self.display_surface.blit(outlineSurf, outlineSurf.get_rect(center = player.rect.center).topleft-pygame.math.Vector2(self.offset.x, self.offset.y + TILESIZE - (TILESIZE//10)))
-
 
 class Level:
     def __init__(self) -> None:
@@ -130,7 +133,7 @@ class Level:
                 self.other_players[data["client_address"]].direction = data['direction']
                 self.other_players[data["client_address"]].status = data['status']
                 self.other_players[data["client_address"]].frame_index = data['frame_index']
-                self.other_players[data["hitbox"]].frame_index = data['hitbox']
+                self.other_players[data["client_address"]].hitbox = data['hitbox']
         except Exception as e:
             pass
         

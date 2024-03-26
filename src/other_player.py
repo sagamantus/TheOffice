@@ -53,10 +53,8 @@ class OtherPlayer(Entity):
             self.frame_index = 0
 
         self.image = animations[int(self.frame_index)].convert_alpha()
-        self.rect = self.image.get_rect(center = self.hitbox.center)
-        
+        self.rect = self.image.get_rect(center = self.hitbox.center)      
                 
     def update(self):
         self.animate()
-        self.move(self.speed)
         
