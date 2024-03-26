@@ -45,13 +45,11 @@ class OtherPlayer(Entity):
         self.animations['right_idle'] = [self.animations['right'][0]]
                 
     def animate(self):
-        animations = self.animations[self.status]
-
-        # loop over the frame index
-        self.frame_index += self.animation_speed
-        if self.frame_index >= len(animations):
-            self.frame_index = 0
-
+        try:
+            animations = self.animations[self.status]
+        except AttributeError:
+            self.import_player_assets(self.character)
+        
         self.image = animations[int(self.frame_index)].convert_alpha()
         self.rect = self.image.get_rect(center = self.hitbox.center)      
                 

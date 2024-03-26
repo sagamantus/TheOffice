@@ -18,7 +18,7 @@ client_connections = {}
 def handle_client(client_socket, client_address):
     while True:
         try:
-            data = client_socket.recv(8192)
+            data = client_socket.recv(1024)
             if not data:
                 break
             
@@ -31,7 +31,7 @@ def handle_client(client_socket, client_address):
                     client_connections[connection].sendall(data)
         except Exception as e:
             print(f"Error handling client {client_address}: {e}")
-            break
+            if type(e) == ConnectionResetError: break
         
     for connection in client_connections:
         if connection != client_address:

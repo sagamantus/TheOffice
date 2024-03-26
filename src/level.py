@@ -121,7 +121,7 @@ class Level:
         # update and draw the game
         client_socket.setblocking(False)
         try:
-            data = client_socket.recv(8192)
+            data = client_socket.recv(1024)
             data = pickle.loads(data)
             if data.get('disconnect', None) != None:
                 self.other_players[data["disconnect"]].kill()

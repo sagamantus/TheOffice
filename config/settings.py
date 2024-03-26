@@ -5,6 +5,7 @@ import pygame
 WIDTH    = 1280	
 HEIGTH   = 720
 FPS      = 60
+DATA_FPS = 120
 TILESIZE = 64
 
 CHARACTER = 'Eskimo'
